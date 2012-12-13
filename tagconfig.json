@@ -1,0 +1,10 @@
+{
+  "files": [
+    {
+      "name": "component.json",
+      "regexs": [
+        "\"version\": \"###\""
+      ]
+    }
+  ]
+}
