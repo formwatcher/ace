@@ -7,20 +7,19 @@
 o = require "jquery"
 Formwatcher = require "formwatcher"
 
-ace = require "./ace.js"
 
-
-Formwatcher.decorators.push class extends Formwatcher.Decorator
+Formwatcher.registerDecorator class extends Formwatcher.Decorator
 
   name: "Ace"
   description: "Turns a textarea into the ace editor."
   nodeNames: [ "TEXTAREA" ]
   classNames: [ "ace" ]
 
-  # defaultOptions:
-  #   auto: true # This automatically makes labels into hints.
-  #   removeTrailingColon: true # Removes the trailing ` : ` from labels.
-  #   color: "#aaa" # The text color of the hint.
+  defaultOptions:
+    theme: null # Won't set a theme if null. This can also be set with the class name, eg: ace-theme-monokai
+    mode: null # Won't set a mode if null. This can also be set with the class name, eg: ace-mode-css
+    tabSize: 2
+    softTabs: yes
 
 
   decorate: (input) ->
@@ -30,13 +29,22 @@ Formwatcher.decorators.push class extends Formwatcher.Decorator
 
     $input.hide()
 
-    $aceContainer = o """<div class="formwatcher-ace-editor"></div>"""
-    aceContainer = $aceContainer.get 0
 
-    elements.ace = aceContainer
+    $aceContainerElement = o """<div class="formwatcher-ace-container"></div>"""
+    $aceElement = o """<div class="formwatcher-ace-editor"></div>"""
 
-    editor = ace.edit aceContainer
+    $aceContainerElement.append $aceElement
+    $aceContainerElement.insertAfter $input
+    aceElement = $aceElement.get 0
+
+    elements.ace = aceElement
+
+    editor = window.ace.edit aceElement
+    editor.setValue $input.val()
+    editor.getSession().setTabSize @options.tabSize
+    editor.getSession().setUseSoftTabs @options.softTabs
+
     # editor.setTheme("ace/theme/monokai");
-    editor.getSession().setMode "ace/mode/javascript"
+    # editor.getSession().setMode "ace/mode/jade"
 
     elements
