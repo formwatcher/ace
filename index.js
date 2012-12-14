@@ -32,7 +32,7 @@
     };
 
     _Class.prototype.decorate = function(input) {
-      var $aceContainerElement, $aceElement, $input, aceElement, editor, elements;
+      var $aceContainerElement, $aceElement, $input, aceElement, className, editor, elements, mode, modeMatch, theme, themeMatch, _i, _j, _len, _len1, _ref, _ref1;
       elements = {
         input: input
       };
@@ -40,14 +40,39 @@
       $input.hide();
       $aceContainerElement = o("<div class=\"formwatcher-ace-container\"></div>");
       $aceElement = o("<div class=\"formwatcher-ace-editor\"></div>");
+      $aceElement.text($input.val());
       $aceContainerElement.append($aceElement);
       $aceContainerElement.insertAfter($input);
       aceElement = $aceElement.get(0);
       elements.ace = aceElement;
       editor = window.ace.edit(aceElement);
-      editor.setValue($input.val());
       editor.getSession().setTabSize(this.options.tabSize);
       editor.getSession().setUseSoftTabs(this.options.softTabs);
+      mode = this.options.mode;
+      _ref = $input.attr("class").split(/\s/);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        className = _ref[_i];
+        if (modeMatch = /^ace\-mode\-(.+)/.exec(className)) {
+          mode = modeMatch[1];
+        }
+      }
+      theme = this.options.theme;
+      _ref1 = $input.attr("class").split(/\s/);
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        className = _ref1[_j];
+        if (themeMatch = /^ace\-theme\-(.+)/.exec(className)) {
+          theme = themeMatch[1];
+        }
+      }
+      if (theme != null) {
+        editor.setTheme("ace/theme/" + theme);
+      }
+      if (mode != null) {
+        editor.getSession().setMode("ace/mode/" + mode);
+      }
+      editor.getSession().on("change", function(e) {
+        return $input.val(editor.getValue());
+      });
       return elements;
     };
 

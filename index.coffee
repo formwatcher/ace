@@ -32,6 +32,7 @@ Formwatcher.registerDecorator class extends Formwatcher.Decorator
 
     $aceContainerElement = o """<div class="formwatcher-ace-container"></div>"""
     $aceElement = o """<div class="formwatcher-ace-editor"></div>"""
+    $aceElement.text $input.val()
 
     $aceContainerElement.append $aceElement
     $aceContainerElement.insertAfter $input
@@ -40,11 +41,23 @@ Formwatcher.registerDecorator class extends Formwatcher.Decorator
     elements.ace = aceElement
 
     editor = window.ace.edit aceElement
-    editor.setValue $input.val()
     editor.getSession().setTabSize @options.tabSize
     editor.getSession().setUseSoftTabs @options.softTabs
 
-    # editor.setTheme("ace/theme/monokai");
-    # editor.getSession().setMode "ace/mode/jade"
+    mode = @options.mode
+    for className in $input.attr("class").split /\s/
+      if modeMatch = /^ace\-mode\-(.+)/.exec className
+        mode = modeMatch[1]
+
+    theme = @options.theme
+    for className in $input.attr("class").split /\s/
+      if themeMatch = /^ace\-theme\-(.+)/.exec className
+        theme = themeMatch[1]
+
+    editor.setTheme("ace/theme/#{theme}") if theme?
+    editor.getSession().setMode("ace/mode/#{mode}") if mode?
+
+    editor.getSession().on "change", (e) -> $input.val editor.getValue()
+
 
     elements

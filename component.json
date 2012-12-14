@@ -9,6 +9,6 @@
     "component/jquery": "*"
   },
   "development": {},
-  "scripts": [ "index.js", "ace.js" ],
+  "scripts": [ "index.js" ],
   "styles": [ "ace.css" ]
 }
