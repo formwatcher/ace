@@ -2,7 +2,7 @@
   "name": "ace",
   "repo": "formwatcher/ace",
   "description": "Replacing textarea fields with the awesome ace editor.",
-  "version": "0.0.1-dev",
+  "version": "0.0.1",
   "keywords": [ "form", "formwatcher", "unobtrusive", "editor", "ace" ],
   "dependencies": {
     "formwatcher/formwatcher": "*",
