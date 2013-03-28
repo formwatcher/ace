@@ -5,8 +5,7 @@
   "version": "0.0.2-dev",
   "keywords": [ "form", "formwatcher", "unobtrusive", "editor", "ace" ],
   "dependencies": {
-    "formwatcher/formwatcher": "*",
-    "component/jquery": "*"
+    "formwatcher/formwatcher": "*"
   },
   "development": {},
   "scripts": [ "index.js" ],

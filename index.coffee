@@ -7,9 +7,13 @@
 KEYCODE_ESC = 27
 KEYCODE_ENTER = 13
 
-o = require "jquery"
 Formwatcher = require "formwatcher"
 
+
+createElement = (string) ->
+  div = document.createElement "div"
+  div.innerHTML = string
+  div.firstChild
 
 Formwatcher.registerDecorator class extends Formwatcher.Decorator
 
@@ -28,23 +32,22 @@ Formwatcher.registerDecorator class extends Formwatcher.Decorator
   decorate: (input) ->
     elements = input: input
 
-    $input = o input
-
-    $input.hide()
+    input.style.display = "none"
 
 
-    $aceContainerElement = o """<div class="formwatcher-ace-container embedded"></div>"""
-    $aceElement = o """<div class="formwatcher-ace-editor"></div>"""
-    $aceElement.text $input.val()
+    aceContainerElement = createElement """<div class="formwatcher-ace-container embedded"></div>"""
+    aceElement = createElement """<div class="formwatcher-ace-editor"></div>"""
 
-    $goFullScreenElement = o """<a href="javascript:undefined;" class="go-fullscreen">Go fullscreen (⌘ - ENTER , CTRL - ENTER)</a>"""
-    $exitFullScreenElement = o """<a href="javascript:undefined;" class="exit-fullscreen">Exit fullscreen (ESC)</a>"""
+    aceElement.appendChild document.createTextNode input.value
 
-    $aceContainerElement.append $aceElement
-    $aceContainerElement.append $goFullScreenElement
-    $aceContainerElement.append $exitFullScreenElement
-    $aceContainerElement.insertAfter $input
-    aceElement = $aceElement.get 0
+    goFullScreenElement = createElement """<a href="javascript:undefined;" class="go-fullscreen">Go fullscreen (⌘ - ENTER , CTRL - ENTER)</a>"""
+    exitFullScreenElement = createElement """<a href="javascript:undefined;" class="exit-fullscreen">Exit fullscreen (ESC)</a>"""
+
+    aceContainerElement.appendChild aceElement
+    aceContainerElement.appendChild goFullScreenElement
+    aceContainerElement.appendChild exitFullScreenElement
+
+    input.parentNode.insertBefore aceContainerElement, input.nextSibling
 
     elements.ace = aceElement
 
@@ -53,42 +56,50 @@ Formwatcher.registerDecorator class extends Formwatcher.Decorator
     editor.getSession().setUseSoftTabs @options.softTabs
 
     mode = @options.mode
-    for className in $input.attr("class").split /\s/
+    for className in input.classList
       if modeMatch = /^ace\-mode\-(.+)/.exec className
         mode = modeMatch[1]
 
     theme = @options.theme
-    for className in $input.attr("class").split /\s/
+    for className in input.classList
       if themeMatch = /^ace\-theme\-(.+)/.exec className
         theme = themeMatch[1]
 
     editor.setTheme("ace/theme/#{theme}") if theme?
     editor.getSession().setMode("ace/mode/#{mode}") if mode?
 
-    editor.getSession().on "change", (e) -> $input.val editor.getValue()
+    editor.getSession().on "change", (e) -> input.value = editor.getValue()
 
 
+    exitFullscreenListener = (e) -> exitFullscreen() if e.keyCode == KEYCODE_ESC
+    enterFullscreenListener = (e) ->
+      if e.keyCode == KEYCODE_ENTER and (e.ctrlKey || e.metaKey)
+        e.stopPropagation()
+        e.preventDefault()
+        goFullscreen() 
 
     # Now setup the fullscreen modes
     goFullscreen = ->
-      o(document).on "keyup.ace-exit-fullscreen", (e) -> exitFullscreen() if e.keyCode == KEYCODE_ESC
-      o(document).off "keydown.ace-go-fullscreen"
-      $aceContainerElement.addClass("fullscreen").removeClass "embedded"
+      document.addEventListener "keyup", exitFullscreenListener
+      document.removeEventListener "keydown", enterFullscreenListener
+
+      aceContainerElement.classList.add "fullscreen"
+      aceContainerElement.classList.remove "embedded"
+
       editor.resize()
 
     exitFullscreen = ->
-      o(document).on "keydown.ace-go-fullscreen", (e) ->
-        if e.keyCode == KEYCODE_ENTER and (e.ctrlKey || e.metaKey)
-          e.stopPropagation()
-          e.preventDefault()
-          goFullscreen() 
-      o(document).off "keyup.ace-exit-fullscreen"
-      $aceContainerElement.addClass("embedded").removeClass "fullscreen"
+      document.addEventListener "keydown", enterFullscreenListener
+      document.removeEventListener "keyup", exitFullscreenListener
+
+      aceContainerElement.classList.add "embedded"
+      aceContainerElement.classList.remove "fullscreen"
+
       editor.resize()
 
 
-    $goFullScreenElement.click goFullscreen
-    $exitFullScreenElement.click exitFullscreen
+    goFullScreenElement.addEventListener "click", goFullscreen
+    exitFullScreenElement.addEventListener "click", exitFullscreen
 
     exitFullscreen()
 
